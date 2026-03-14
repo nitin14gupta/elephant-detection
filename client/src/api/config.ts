@@ -1,8 +1,8 @@
 // API Configuration
 export const API_CONFIG = {
-    BASE_URL: typeof window !== 'undefined' && window.location.hostname === 'localhost'
+    BASE_URL: process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost'
         ? 'http://localhost:8000'
-        : 'https://api.elephant.com',
+        : 'https://api.elephant.com'),
 
     ENDPOINTS: {
         AUTH: {
