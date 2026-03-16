@@ -3,7 +3,7 @@ import requests
 import logging
 import time
 import threading
-from typing import List, Optional
+from typing import List, Optional, Dict
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -14,18 +14,20 @@ logger = logging.getLogger(__name__)
 
 class TelegramService:
     """
-    Service to send Telegram alerts to configured recipients.
+    Production-grade Telegram Alert Service with retry logic and rich formatting.
     """
     
     BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-    # Parse comma-separated list of IDs from env
     RECIPIENTS = [int(x.strip()) for x in os.getenv("TELEGRAM_RECIPIENTS", "").split(",") if x.strip()]
     API_URL = f"https://api.telegram.org/bot{BOT_TOKEN}"
+    
+    MAX_RETRIES = 3
+    RETRY_DELAY = 2  # Seconds
 
     @staticmethod
     def format_alert_message(camera_name: str, location: str, confidence: float) -> str:
         """
-        Format the alert message with detection details.
+        Format the alert message with detection details and professional styling.
         """
         timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
         
@@ -47,17 +49,11 @@ Please check the live monitoring dashboard immediately!
         return message.strip()
 
     @classmethod
-    def send_alert_sync(cls, camera_name: str, location: str, confidence: float, image_path: Optional[str] = None):
+    def send_message_with_retry(cls, chat_id: int, message: str, image_path: Optional[str] = None) -> bool:
         """
-        Synchronous method to send alert (internal use).
+        Sends a message or photo to a specific chat with retry logic.
         """
-        if not cls.BOT_TOKEN or not cls.RECIPIENTS:
-            logger.error("Telegram Bot Token or Recipients not configured properly.")
-            return
-
-        message = cls.format_alert_message(camera_name, location, confidence * 100)
-        
-        for chat_id in cls.RECIPIENTS:
+        for attempt in range(cls.MAX_RETRIES):
             try:
                 if image_path and os.path.exists(image_path):
                     with open(image_path, 'rb') as photo:
@@ -84,11 +80,31 @@ Please check the live monitoring dashboard immediately!
                 
                 if response.status_code == 200:
                     logger.info(f"✓ Alert sent to Telegram chat {chat_id}")
+                    return True
                 else:
-                    logger.error(f"✗ Failed to send Telegram alert to {chat_id}: {response.text}")
+                    logger.error(f"✗ Failed (Attempt {attempt+1}/{cls.MAX_RETRIES}) for {chat_id}: {response.text}")
                     
             except Exception as e:
-                logger.error(f"✗ Error sending Telegram alert to {chat_id}: {str(e)}")
+                logger.error(f"✗ Error (Attempt {attempt+1}/{cls.MAX_RETRIES}) for {chat_id}: {str(e)}")
+            
+            if attempt < cls.MAX_RETRIES - 1:
+                time.sleep(cls.RETRY_DELAY)
+        
+        return False
+
+    @classmethod
+    def send_alert_sync(cls, camera_name: str, location: str, confidence: float, image_path: Optional[str] = None):
+        """
+        Synchronous method to iterate through recipients.
+        """
+        if not cls.BOT_TOKEN or not cls.RECIPIENTS:
+            logger.error("Telegram Bot Token or Recipients not configured properly.")
+            return
+
+        message = cls.format_alert_message(camera_name, location, confidence * 100)
+        
+        for chat_id in cls.RECIPIENTS:
+            cls.send_message_with_retry(chat_id, message, image_path)
 
     @classmethod
     def send_alert(cls, camera_name: str, location: str, confidence: float, image_path: Optional[str] = None):
@@ -101,4 +117,4 @@ Please check the live monitoring dashboard immediately!
             daemon=True
         )
         thread.start()
-        logger.info("Background thread started for Telegram alert processing.")
+        logger.info(f"Background alert thread started for {camera_name}")

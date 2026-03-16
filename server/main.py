@@ -16,7 +16,17 @@ async def lifespan(app: FastAPI):
     yield
     print("Shutting down ML features...")
 
+from fastapi.staticfiles import StaticFiles
+import os
+
 app = FastAPI(title="Elephant Detection API", version="3.0.0", lifespan=lifespan)
+
+# Ensure recordings directory exists
+if not os.path.exists("recordings"):
+    os.makedirs("recordings")
+
+# Mount Static Files
+app.mount("/recordings", StaticFiles(directory="recordings"), name="recordings")
 
 # Enable CORS
 app.add_middleware(

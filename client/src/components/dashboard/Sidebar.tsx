@@ -10,6 +10,7 @@ import {
   History,
   Settings,
   BarChart3,
+  Video,
   LogOut,
   User as UserIcon
 } from "lucide-react";
@@ -34,6 +35,7 @@ export default function Sidebar({ userEmail }: SidebarProps) {
     { id: "dashboard", icon: Activity, label: "Live Feed", href: "/dashboard" },
     { id: "livecam", icon: Camera, label: "LiveCam Fleet", href: "/dashboard/livecam" },
     { id: "analytics", icon: BarChart3, label: "Analytics", href: "/dashboard/analytics" },
+    { id: "recordings", icon: Video, label: "Recordings", href: "/dashboard/recordings" },
     { id: "logs", icon: History, label: "Logs", href: "/dashboard/logs" },
     { id: "settings", icon: Settings, label: "Settings", href: "/dashboard/settings" },
   ];

@@ -1,8 +1,9 @@
 fastapi
 uvicorn
 python-multipart
-opencv-python-headless
+opencv-python
 numpy
+ultralytics
 tensorflow==2.15.0
 pillow
 requests

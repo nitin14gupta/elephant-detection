@@ -40,11 +40,12 @@ export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [dateFilter, setDateFilter] = useState<"today" | "week" | "month" | "all">("week");
 
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = async (range = dateFilter) => {
     setLoading(true);
     try {
-      const result = await apiService.getAnalytics();
+      const result = await apiService.getAnalytics(range);
       setData(result);
     } catch (err) {
       console.error("Failed to fetch analytics:", err);
@@ -61,6 +62,11 @@ export default function AnalyticsPage() {
   const handleRefresh = () => {
     setIsRefreshing(true);
     fetchAnalytics();
+  };
+
+  const handleFilterChange = (range: any) => {
+    setDateFilter(range);
+    fetchAnalytics(range);
   };
 
   if (loading && !data) {
@@ -89,17 +95,45 @@ export default function AnalyticsPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleRefresh}
-              className="p-3.5 rounded-2xl border border-white/10 hover:bg-white/5 transition-all text-zinc-400"
-            >
-              <RefreshCcw className={`w-5 h-5 ${isRefreshing ? 'animate-spin text-emerald-500' : ''}`} />
-            </button>
-            <div className="bg-zinc-900/50 border border-white/10 px-6 py-3.5 rounded-2xl flex items-center gap-3">
-              <Calendar className="w-4 h-4 text-emerald-500" />
-              <span className="text-sm font-bold text-zinc-300">Last 7 Days</span>
-              <Filter className="w-4 h-4 text-zinc-600" />
+          <div className="flex items-center gap-4">
+            {/* Date Filters */}
+            <div className="flex items-center gap-1 bg-zinc-900/50 border border-white/10 p-1.5 rounded-2xl overflow-x-auto scrollbar-hide">
+              {[
+                { id: "today", label: "Today" },
+                { id: "week", label: "Week" },
+                { id: "month", label: "Month" },
+                { id: "all", label: "All" }
+              ].map((f) => (
+                <button
+                  key={f.id}
+                  onClick={() => handleFilterChange(f.id)}
+                  className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all relative shrink-0 ${dateFilter === f.id ? "text-white" : "text-zinc-500 hover:text-zinc-300"
+                    }`}
+                >
+                  {dateFilter === f.id && (
+                    <motion.div
+                      layoutId="anaFilter"
+                      className="absolute inset-0 bg-white/10 rounded-xl"
+                    />
+                  )}
+                  <span className="relative z-10">{f.label}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleRefresh}
+                className="p-3.5 rounded-2xl border border-white/10 hover:bg-white/5 transition-all text-zinc-400"
+              >
+                <RefreshCcw className={`w-5 h-5 ${isRefreshing ? 'animate-spin text-emerald-500' : ''}`} />
+              </button>
+              <div className="bg-zinc-900/50 border border-white/10 px-6 py-3.5 rounded-2xl hidden md:flex items-center gap-3">
+                <Calendar className="w-4 h-4 text-emerald-500" />
+                <span className="text-sm font-bold text-zinc-300">
+                  {dateFilter === 'all' ? 'Entire History' : `Last ${dateFilter === 'today' ? '24 Hours' : dateFilter === 'week' ? '7 Days' : '30 Days'}`}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -251,6 +285,34 @@ export default function AnalyticsPage() {
             </div>
           </motion.div>
 
+          {/* Movement Patterns Chart */}
+          {/* <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="col-span-1 xl:col-span-2 bg-zinc-900/30 border border-white/5 rounded-[2.5rem] p-8 space-y-6"
+          >
+            <div className="flex items-center gap-3">
+              <TrendingUp className="w-5 h-5 text-blue-400" />
+              <h3 className="text-lg font-bold text-white tracking-tight">Movement Protocols</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {['Left', 'Right', 'Top', 'Bottom'].map((dir) => (
+                <div key={dir} className="bg-zinc-900/50 border border-white/5 p-6 rounded-3xl flex flex-col items-center justify-center space-y-2 group hover:border-blue-500/30 transition-all">
+                  <span className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">{dir} TO SECTOR</span>
+                  <span className="text-3xl font-black text-white group-hover:text-blue-400 transition-colors">
+                    {Math.floor(Math.random() * 20) + 5}% 
+                  </span>
+                  <div className="w-full bg-zinc-800 h-1 rounded-full overflow-hidden">
+                    <div 
+                      className="bg-blue-500 h-full rounded-full transition-all duration-1000" 
+                      style={{ width: `${Math.floor(Math.random() * 60) + 20}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div> */}
         </div>
       </div>
     </>

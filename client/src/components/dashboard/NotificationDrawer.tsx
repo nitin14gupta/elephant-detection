@@ -21,6 +21,8 @@ interface Alert {
     type: string;
     severity: string;
     timestamp: string;
+    count?: number;
+    direction?: string;
     cameras: {
         name: string;
         location: string;
@@ -135,12 +137,19 @@ export default function NotificationDrawer({ isOpen, onClose }: NotificationDraw
                                                         <Clock className="w-3 h-3" /> {formatTime(alert.timestamp)}
                                                     </span>
                                                 </div>
-                                                <h4 className="text-sm font-bold text-white group-hover:text-red-400 transition-colors">Elephant Detected</h4>
+                                                <h4 className="text-sm font-bold text-white group-hover:text-red-400 transition-colors">
+                                                    {alert.count && alert.count > 1 ? `${alert.count} Elephants Detected` : "Elephant Detected"}
+                                                </h4>
                                                 <div className="space-y-1">
                                                     <div className="flex items-center gap-1.5 text-xs text-zinc-400">
                                                         <MapPin className="w-3.5 h-3.5 text-zinc-600" />
                                                         {alert.cameras.location || "Sector Unknown"}
                                                     </div>
+                                                    {alert.direction && alert.direction !== 'unknown' && (
+                                                        <div className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-500 uppercase tracking-widest">
+                                                            Moving: {alert.direction}
+                                                        </div>
+                                                    )}
                                                     <div className="flex items-center gap-1.5 text-[10px] font-mono text-zinc-500">
                                                         NODE: {alert.cameras.name} | {alert.cam_id}
                                                     </div>

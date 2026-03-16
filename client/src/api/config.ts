@@ -15,7 +15,8 @@ export const API_CONFIG = {
             UPDATE: (id: number) => `/api/cameras/${id}`,
         },
         ALERTS: '/api/alerts',
-        ANALYTICS: '/api/analytics'
+        ANALYTICS: '/api/analytics',
+        RECORDINGS: '/api/recordings'
     },
 
     DEFAULT_HEADERS: {

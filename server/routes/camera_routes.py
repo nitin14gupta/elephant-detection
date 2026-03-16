@@ -91,20 +91,39 @@ async def get_alerts(current_user: str = Depends(get_current_user)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/api/analytics")
-async def get_analytics(current_user: str = Depends(get_current_user)):
+async def get_analytics(range: str = "week", current_user: str = Depends(get_current_user)):
     try:
-        # Fetch encounters and cameras
-        encounters_resp = supabase.table("encounters").select("timestamp, cam_id").execute()
+        from datetime import timedelta, timezone
+        now = datetime.now(timezone.utc)
+        
+        query = supabase.table("encounters").select("timestamp, cam_id")
+        
+        if range == "today":
+            start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
+            query = query.gte("timestamp", start_date.isoformat())
+        elif range == "week":
+            start_date = now - timedelta(days=7)
+            query = query.gte("timestamp", start_date.isoformat())
+        elif range == "month":
+            start_date = now - timedelta(days=30)
+            query = query.gte("timestamp", start_date.isoformat())
+        # "all" is implicitly handled by not adding a filter
+            
+        encounters_resp = query.execute()
         cameras_resp = supabase.table("cameras").select("id, name").execute()
         
         encounters = encounters_resp.data
         cameras = {c['id']: c['name'] for c in cameras_resp.data}
         
-        # 1. Hourly Distribution (Rush Hour)
+        # 1. Hourly Distribution (Rush Hour) in IST
         hourly_data = [0] * 24
+        ist_offset = timedelta(hours=5, minutes=30)
+        
         for e in encounters:
-            ts = datetime.fromisoformat(e['timestamp'].replace('Z', '+00:00'))
-            hourly_data[ts.hour] += 1
+            # Parse UTC and convert to IST
+            utc_ts = datetime.fromisoformat(e['timestamp'].replace('Z', '+00:00'))
+            ist_ts = utc_ts + ist_offset
+            hourly_data[ist_ts.hour] += 1
             
         rush_hour = [{"hour": f"{i:02d}:00", "count": count} for i, count in enumerate(hourly_data)]
         
@@ -117,18 +136,28 @@ async def get_analytics(current_user: str = Depends(get_current_user)):
         hot_zones = [{"name": name, "count": count} for name, count in cam_counts.items()]
         hot_zones = sorted(hot_zones, key=lambda x: x['count'], reverse=True)
         
-        # 3. Daily Trend (Last 7 Days)
+        # 3. Daily Trend (in IST)
         daily_counts = {}
         for e in encounters:
-            date_str = e['timestamp'].split('T')[0]
+            utc_ts = datetime.fromisoformat(e['timestamp'].replace('Z', '+00:00'))
+            ist_ts = utc_ts + ist_offset
+            date_str = ist_ts.strftime('%Y-%m-%d')
             daily_counts[date_str] = daily_counts.get(date_str, 0) + 1
             
-        daily_trend = [{"date": d, "count": c} for d, c in sorted(daily_counts.items())][-7:]
+        daily_trend = [{"date": d, "count": c} for d, c in sorted(daily_counts.items())]
 
         return {
             "rush_hour": rush_hour,
             "hot_zones": hot_zones,
             "daily_trend": daily_trend
         }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/api/recordings")
+async def get_recordings(current_user: str = Depends(get_current_user)):
+    try:
+        response = supabase.table("recordings").select("*, cameras(name, location)").order("timestamp", desc=True).execute()
+        return response.data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
