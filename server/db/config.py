@@ -1,15 +1,20 @@
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
 import os
-from supabase import create_client, Client
-from dotenv import load_dotenv
 
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:////app/data/elephant.db")
 
-_env_loaded = load_dotenv()
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
 
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY") or os.getenv("SUPABASE_KEY")
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
-def get_supabase_client() -> Client:
-    if not SUPABASE_URL or not SUPABASE_KEY:
-        raise RuntimeError("Supabase credentials are not configured. Set SUPABASE_URL and SUPABASE_SERVICE_KEY.")
-    return create_client(SUPABASE_URL, SUPABASE_KEY)
-
+def init_db():
+    from db.models import User, Camera, Encounter, Alert, Recording  # noqa
+    Base.metadata.create_all(bind=engine)

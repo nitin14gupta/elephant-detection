@@ -2,7 +2,7 @@
 export const API_CONFIG = {
     BASE_URL: process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost'
         ? 'http://localhost:8000'
-        : 'https://api.elephant.com'),
+        : ''),
 
     ENDPOINTS: {
         AUTH: {
@@ -15,7 +15,8 @@ export const API_CONFIG = {
             UPDATE: (id: number) => `/api/cameras/${id}`,
         },
         ALERTS: '/api/alerts',
-        ANALYTICS: '/api/analytics'
+        ANALYTICS: '/api/analytics',
+        RECORDINGS: '/api/recordings'
     },
 
     DEFAULT_HEADERS: {
@@ -48,4 +49,3 @@ export interface AuthResponse {
         name?: string;
     };
 }
-

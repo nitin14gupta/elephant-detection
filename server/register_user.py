@@ -1,50 +1,43 @@
 import os
+import sys
 import bcrypt
-from supabase import create_client, Client
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# Configuration from .env
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+# Ensure the server directory is in path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-if not SUPABASE_URL or not SUPABASE_KEY:
-    print("Error: SUPABASE_URL or SUPABASE_KEY not found in .env file")
-    exit(1)
+from db.config import init_db, SessionLocal
+from db.models import User
 
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def create_user(email, password):
-    # Hash the password correctly using bcrypt
-    password_bytes = password.encode('utf-8')
-    salt = bcrypt.gensalt(rounds=12)
-    hashed_password = bcrypt.hashpw(password_bytes, salt).decode('utf-8')
-
-    # Prepare user data
-    user_data = {
-        "email": email,
-        "password_hash": hashed_password
-    }
-
+    init_db()
+    db = SessionLocal()
     try:
-        # Check if user exists first to decide whether to update or insert
-        check = supabase.table("users").select("email").eq("email", email).execute()
-        
-        if check.data:
+        password_bytes = password.encode('utf-8')
+        salt = bcrypt.gensalt(rounds=12)
+        hashed_password = bcrypt.hashpw(password_bytes, salt).decode('utf-8')
+
+        existing = db.query(User).filter(User.email == email).first()
+        if existing:
             print(f"User {email} already exists. Updating password...")
-            response = supabase.table("users").update({"password_hash": hashed_password}).eq("email", email).execute()
+            existing.password_hash = hashed_password
         else:
             print(f"Creating new user {email}...")
-            response = supabase.table("users").insert(user_data).execute()
+            db.add(User(email=email, password_hash=hashed_password))
 
-        print("Successfully registered user in Supabase!")
+        db.commit()
+        print("Done!")
         print(f"Email: {email}")
-        print(f"Hashed Password: {hashed_password}")
-        
+        print(f"Password: {password}")
     except Exception as e:
-        print(f"Error creating user: {e}")
+        db.rollback()
+        print(f"Error: {e}")
+    finally:
+        db.close()
+
 
 if __name__ == "__main__":
-    # The pre-defined user you requested
-    create_user("nitin@gmail.com", "nitin@1234")
+    create_user("admin@justtouchsolutions.in", "Admin@1234")

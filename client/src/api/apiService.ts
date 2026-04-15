@@ -98,8 +98,16 @@ class ApiService {
         return this.handleResponse(response);
     }
 
-    async getAnalytics() {
-        const response = await fetch(`${this.baseURL}${API_CONFIG.ENDPOINTS.ANALYTICS}`, {
+    async getAnalytics(range: string = 'week') {
+        const response = await fetch(`${this.baseURL}${API_CONFIG.ENDPOINTS.ANALYTICS}?range=${range}`, {
+            method: 'GET',
+            headers: this.getHeaders(true),
+        });
+        return this.handleResponse(response);
+    }
+
+    async getRecordings() {
+        const response = await fetch(`${this.baseURL}${API_CONFIG.ENDPOINTS.RECORDINGS}`, {
             method: 'GET',
             headers: this.getHeaders(true),
         });

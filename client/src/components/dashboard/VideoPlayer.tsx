@@ -58,7 +58,7 @@ export default function VideoPlayer({ url, name, id }: VideoPlayerProps) {
   };
 
   return (
-    <div className="relative group bg-zinc-950 rounded-2xl overflow-hidden border border-white/5 hover:border-emerald-500/30 transition-all duration-500">
+    <div className="relative group bg-zinc-950 rounded-2xl overflow-hidden border border-white/5 hover:border-emerald-500/30 transition-all duration-500 h-full">
       {/* Header Info */}
       <div className="absolute top-0 left-0 right-0 p-3 bg-gradient-to-b from-black/80 to-transparent z-10 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -73,7 +73,7 @@ export default function VideoPlayer({ url, name, id }: VideoPlayerProps) {
       {/* Video Element */}
       <video
         ref={videoRef}
-        className="w-full aspect-video object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500"
+        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500"
         muted
         playsInline
       />

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Shield, Lock, Mail, ArrowRight, Loader2, AlertCircle } from "lucide-react";
+import { Lock, Mail, ArrowRight, Loader2, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiService } from "@/src/api/apiService";
 
@@ -24,7 +24,6 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
-
     try {
       await apiService.login({ email, password });
       router.push("/dashboard");
@@ -36,85 +35,155 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-6 selection:bg-emerald-500/30">
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md"
+        initial={{ opacity: 0, scale: 0.97 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden flex min-h-[520px]"
       >
-        <div className="bg-zinc-950 border border-white/10 rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden">
-          {/* Background Highlight */}
-          <div className="absolute -top-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[80px]" />
+        {/* ── Left panel ── */}
+        <div
+          className="relative hidden md:flex flex-col items-center justify-between w-[46%] flex-shrink-0 px-10 py-10 text-white overflow-hidden"
+          style={{ background: "linear-gradient(160deg, #2e7d32 0%, #1b5e20 100%)" }}
+        >
+          {/* decorative circles */}
+          <div className="absolute -top-16 -left-16 w-56 h-56 rounded-full bg-white/5" />
+          <div className="absolute bottom-10 -right-20 w-72 h-72 rounded-full bg-white/5" />
+          <div className="absolute top-1/2 -left-10 w-40 h-40 rounded-full bg-white/5" />
 
-          <div className="flex flex-col items-center mb-10 text-center relative z-10">
-            <div className="mb-6 relative">
-              <div className="absolute inset-0 bg-emerald-500/20 blur-xl rounded-full" />
-              <div className="relative w-20 h-20 bg-black border border-white/10 rounded-2xl flex items-center justify-center overflow-hidden">
-                <Image
-                  src="/logo.png"
-                  alt="Elephant AI Logo"
-                  width={60}
-                  height={60}
-                  className="object-contain"
-                />
-              </div>
+          {/* Logo + title */}
+          <div className="relative z-10 flex flex-col items-center text-center gap-4">
+            <div className="w-24 h-24 rounded-full bg-white p-1.5 shadow-lg overflow-hidden flex items-center justify-center">
+              <Image
+                src="/logo.jpeg"
+                alt="Aeronics Technologies"
+                width={88}
+                height={88}
+                className="object-contain rounded-full"
+                priority
+              />
             </div>
-            <h1 className="text-3xl font-bold tracking-tight mb-2">Welcome Back</h1>
-            <p className="text-zinc-500 text-sm">Access the Elephant AI system</p>
+            <div>
+              <h2 className="text-3xl font-extrabold tracking-tight drop-shadow">
+                Hello, Welcome!
+              </h2>
+              <p className="mt-1 text-green-200 text-sm font-medium">
+                Elephant Intelligence System
+              </p>
+            </div>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-6 relative z-10">
+          {/* Credits */}
+          <div className="relative z-10 w-full border-l-4 border-green-300/60 pl-4 space-y-2">
+            <p className="text-sm font-semibold text-green-100 leading-snug">
+              Conceptualized by:
+            </p>
+            <p className="text-base font-bold text-white leading-snug">
+              Shri Umar Imam, IFS
+            </p>
+            <p className="text-sm text-green-200">DFO Jhargram</p>
+
+            <div className="pt-3">
+              <p className="text-sm font-semibold text-green-100 leading-snug">
+                Developed by:
+              </p>
+              <p className="text-base font-bold text-white leading-snug">
+                Aeronics Technologies Pvt. Ltd.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Right panel ── */}
+        <div className="flex-1 flex flex-col justify-center px-10 py-12 bg-white">
+          {/* Mobile logo (shown only on small screens) */}
+          <div className="flex md:hidden justify-center mb-6">
+            <div className="w-20 h-20 rounded-full bg-green-50 border border-green-100 p-1.5 shadow overflow-hidden flex items-center justify-center">
+              <Image
+                src="/logo.jpeg"
+                alt="Aeronics Technologies"
+                width={72}
+                height={72}
+                className="object-contain rounded-full"
+                priority
+              />
+            </div>
+          </div>
+
+          <h1 className="text-4xl font-bold text-gray-800 mb-8">Login</h1>
+
+          <form onSubmit={handleLogin} className="space-y-5 w-full max-w-sm">
             <AnimatePresence>
               {error && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex items-center gap-3 text-red-400 text-sm"
+                  className="bg-red-50 border border-red-200 rounded-xl p-3 flex items-center gap-3 text-red-600 text-sm"
                 >
-                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   {error}
                 </motion.div>
               )}
             </AnimatePresence>
 
-            <div className="space-y-4">
-              <div className="relative group">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-600 group-focus-within:text-emerald-500 transition-colors" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@email.com"
-                  className="w-full bg-zinc-900 border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-zinc-700 focus:outline-none focus:border-emerald-500/50 transition-all"
-                  required
-                />
-              </div>
+            {/* Email */}
+            <div className="relative group">
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-green-600 transition-colors" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Username"
+                className="w-full border border-gray-200 rounded-xl py-3.5 pl-12 pr-4 text-gray-800 placeholder:text-gray-400 bg-gray-50 focus:outline-none focus:border-green-500 focus:bg-white transition-all text-sm"
+                required
+              />
+            </div>
 
-              <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-600 group-focus-within:text-emerald-500 transition-colors" />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full bg-zinc-900 border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-zinc-700 focus:outline-none focus:border-emerald-500/50 transition-all"
-                  required
-                />
-              </div>
+            {/* Password */}
+            <div className="relative group">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-green-600 transition-colors" />
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+                className="w-full border border-gray-200 rounded-xl py-3.5 pl-12 pr-4 text-gray-800 placeholder:text-gray-400 bg-gray-50 focus:outline-none focus:border-green-500 focus:bg-white transition-all text-sm"
+                required
+              />
+            </div>
+
+            <div className="flex justify-end -mt-1">
+              <button
+                type="button"
+                className="text-xs text-gray-500 hover:text-green-700 transition-colors"
+              >
+                Forgot Password?
+              </button>
             </div>
 
             <button
               disabled={loading}
-              className="w-full bg-white text-black py-4 rounded-2xl text-lg font-bold flex items-center justify-center gap-2 hover:bg-zinc-200 active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none"
+              className="w-full bg-green-700 hover:bg-green-600 active:scale-[0.98] text-white py-3.5 rounded-xl text-base font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:pointer-events-none group shadow-md shadow-green-900/20"
             >
               {loading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
-                <>Sign In <ArrowRight className="w-5 h-5" /></>
+                <>
+                  Login
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </>
               )}
             </button>
           </form>
+
+          {/* Mobile credits */}
+          <p className="md:hidden mt-10 text-[11px] text-gray-400 text-center leading-relaxed">
+            Conceptualized by <span className="text-gray-600 font-semibold">Shri Umar Imam, IFS</span>, DFO Jhargram
+            <br />
+            Developed by <span className="text-gray-600 font-semibold">Aeronics Technologies Pvt. Ltd.</span>
+          </p>
         </div>
       </motion.div>
     </div>

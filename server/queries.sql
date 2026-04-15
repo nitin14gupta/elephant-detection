@@ -37,17 +37,22 @@ CREATE TABLE IF NOT EXISTS alerts (
     type TEXT DEFAULT 'Elephant Detection',
     severity TEXT DEFAULT 'CRITICAL',
     is_active BOOLEAN DEFAULT TRUE,
+    count INTEGER DEFAULT 1,
+    direction TEXT DEFAULT 'unknown',
     url TEXT,
     timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Initial Camera Data (Based on config.py)
-INSERT INTO cameras (id, name, live_link, is_active) VALUES
-(14, 'Cam 14', 'https://www.ttspl.live:8080/hls/cam14.m3u8', TRUE),
-(15, 'Cam 15', 'https://www.ttspl.live:8080/hls/cam15.m3u8', TRUE),
-(16, 'Cam 16', 'https://www.ttspl.live:8080/hls/cam16.m3u8', TRUE),
-(17, 'Cam 17', 'https://www.ttspl.live:8080/hls/cam17.m3u8', TRUE),
-(18, 'Cam 18', 'https://www.ttspl.live:8080/hls/cam18.m3u8', TRUE),
-(19, 'Cam 19', 'https://www.ttspl.live:8080/hls/cam19.m3u8', TRUE),
-(6, 'Cam 6', 'https://www.ttspl.live:8080/hls/cam6.m3u8', TRUE)
-ON CONFLICT (id) DO NOTHING;
+-- Create Recordings Table
+CREATE TABLE IF NOT EXISTS recordings (
+    id SERIAL PRIMARY KEY,
+    alert_id INTEGER REFERENCES alerts(id) ON DELETE CASCADE,
+    cam_id INTEGER REFERENCES cameras(id) ON DELETE CASCADE,
+    file_path TEXT NOT NULL,
+    file_name TEXT NOT NULL,
+    file_size BIGINT,
+    duration_secs INTEGER,
+    count INTEGER,
+    direction TEXT,
+    timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);

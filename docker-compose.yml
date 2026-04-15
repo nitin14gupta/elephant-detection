@@ -10,6 +10,8 @@ services:
     restart: always
     volumes:
       - ./server/models:/app/models
+      - ./server/data:/app/data
+      - ./server/recordings:/app/recordings
 
   frontend:
     build:

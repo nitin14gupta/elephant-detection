@@ -1,258 +1,173 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { BarChart3, TrendingUp, Clock, Map, RefreshCcw, Loader2, Calendar } from "lucide-react";
 import {
-  BarChart3,
-  TrendingUp,
-  Clock,
-  Map,
-  RefreshCcw,
-  Loader2,
-  Calendar,
-  Zap,
-  ShieldCheck,
-  Filter
-} from "lucide-react";
-import {
-  AreaChart,
-  Area,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-  Legend
+    AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
+    Tooltip, ResponsiveContainer, Cell,
 } from "recharts";
 import { motion } from "framer-motion";
 import { apiService } from "@/src/api/apiService";
 import Header from "@/src/components/dashboard/Header";
 
 interface AnalyticsData {
-  rush_hour: { hour: string; count: number }[];
-  hot_zones: { name: string; count: number }[];
-  daily_trend: { date: string; count: number }[];
+    rush_hour: { hour: string; count: number }[];
+    hot_zones: { name: string; count: number }[];
+    daily_trend: { date: string; count: number }[];
 }
 
+const FILTERS = [
+    { id: "today", label: "Today" },
+    { id: "week",  label: "Week" },
+    { id: "month", label: "Month" },
+    { id: "all",   label: "All" },
+] as const;
+
+type FilterId = typeof FILTERS[number]["id"];
+
 export default function AnalyticsPage() {
-  const [data, setData] = useState<AnalyticsData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+    const [data, setData] = useState<AnalyticsData | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [dateFilter, setDateFilter] = useState<FilterId>("week");
 
-  const fetchAnalytics = async () => {
-    setLoading(true);
-    try {
-      const result = await apiService.getAnalytics();
-      setData(result);
-    } catch (err) {
-      console.error("Failed to fetch analytics:", err);
-    } finally {
-      setLoading(false);
-      setIsRefreshing(false);
+    const fetchAnalytics = async (range: FilterId = dateFilter) => {
+        setLoading(true);
+        try {
+            setData(await apiService.getAnalytics(range));
+        } catch { console.error("Failed to fetch analytics"); }
+        finally { setLoading(false); setIsRefreshing(false); }
+    };
+
+    useEffect(() => { fetchAnalytics(); }, []);
+
+    const handleFilter = (range: FilterId) => { setDateFilter(range); fetchAnalytics(range); };
+
+    const tooltipStyle = {
+        contentStyle: { backgroundColor: "#fff", border: "1px solid #e5e7eb", borderRadius: "10px", fontSize: 12 },
+        itemStyle: { color: "#166534", fontWeight: 600 },
+    };
+
+    if (loading && !data) {
+        return (
+            <div className="flex-1 flex flex-col items-center justify-center gap-3 bg-gray-50">
+                <Loader2 className="w-8 h-8 animate-spin text-green-700" />
+                <p className="text-sm text-gray-500">Loading analytics...</p>
+            </div>
+        );
     }
-  };
 
-  useEffect(() => {
-    fetchAnalytics();
-  }, []);
-
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    fetchAnalytics();
-  };
-
-  if (loading && !data) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center">
-        <Loader2 className="w-12 h-12 animate-spin text-emerald-500 mb-4" />
-        <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs">Architecting Data Perspective...</p>
-      </div>
+        <>
+            <Header title="Analytics" />
+
+            <div className="flex-1 overflow-y-auto p-6 space-y-5 bg-gray-50">
+                {/* Toolbar */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div>
+                        <h2 className="text-base font-semibold text-gray-900">Detection Trends</h2>
+                        <p className="text-sm text-gray-500">Elephant activity patterns over time</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        {/* Filter pills */}
+                        <div className="flex items-center gap-1 bg-white border border-gray-200 p-1 rounded-lg">
+                            {FILTERS.map((f) => (
+                                <button key={f.id} onClick={() => handleFilter(f.id)}
+                                    className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+                                        dateFilter === f.id
+                                            ? "bg-green-700 text-white"
+                                            : "text-gray-500 hover:text-gray-800 hover:bg-gray-100"
+                                    }`}>
+                                    {f.label}
+                                </button>
+                            ))}
+                        </div>
+                        <button onClick={() => { setIsRefreshing(true); fetchAnalytics(); }}
+                            className="p-2 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 text-gray-500 transition-colors">
+                            <RefreshCcw className={`w-4 h-4 ${isRefreshing ? "animate-spin text-green-700" : ""}`} />
+                        </button>
+                    </div>
+                </div>
+
+                {/* Charts */}
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+                    {/* Activity Trend */}
+                    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                        className="col-span-1 xl:col-span-2 bg-white border border-gray-200 rounded-xl p-6">
+                        <div className="flex items-center gap-2 mb-5">
+                            <TrendingUp className="w-4 h-4 text-green-700" />
+                            <h3 className="text-sm font-semibold text-gray-800">Activity Trend</h3>
+                        </div>
+                        <div className="h-72">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={data?.daily_trend}>
+                                    <defs>
+                                        <linearGradient id="colorGreen" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#15803d" stopOpacity={0.15} />
+                                            <stop offset="95%" stopColor="#15803d" stopOpacity={0} />
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                                    <XAxis dataKey="date" stroke="#94a3b8" fontSize={11} axisLine={false} tickLine={false}
+                                        tickFormatter={(v) => v.split("-").slice(1).join("/")} />
+                                    <YAxis stroke="#94a3b8" fontSize={11} axisLine={false} tickLine={false} />
+                                    <Tooltip {...tooltipStyle} />
+                                    <Area type="monotone" dataKey="count" stroke="#15803d" strokeWidth={2.5}
+                                        fillOpacity={1} fill="url(#colorGreen)" animationDuration={1200} />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </motion.div>
+
+                    {/* Rush Hour */}
+                    <motion.div initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}
+                        className="bg-white border border-gray-200 rounded-xl p-6">
+                        <div className="flex items-center gap-2 mb-5">
+                            <Clock className="w-4 h-4 text-amber-500" />
+                            <h3 className="text-sm font-semibold text-gray-800">Activity by Hour</h3>
+                        </div>
+                        <div className="h-64">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={data?.rush_hour}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                                    <XAxis dataKey="hour" stroke="#94a3b8" fontSize={10} axisLine={false} tickLine={false} />
+                                    <YAxis stroke="#94a3b8" fontSize={10} axisLine={false} tickLine={false} />
+                                    <Tooltip {...tooltipStyle} cursor={{ fill: "#f8fafc" }} />
+                                    <Bar dataKey="count" radius={[4, 4, 0, 0]} animationDuration={1200}>
+                                        {data?.rush_hour.map((entry, i) => (
+                                            <Cell key={i} fill={entry.count > 5 ? "#f59e0b" : "#e2e8f0"} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </motion.div>
+
+                    {/* Hot Zones */}
+                    <motion.div initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}
+                        className="bg-white border border-gray-200 rounded-xl p-6">
+                        <div className="flex items-center gap-2 mb-5">
+                            <Map className="w-4 h-4 text-green-700" />
+                            <h3 className="text-sm font-semibold text-gray-800">High Activity Zones</h3>
+                        </div>
+                        <div className="h-64">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart layout="vertical" data={data?.hot_zones}>
+                                    <XAxis type="number" hide />
+                                    <YAxis dataKey="name" type="category" stroke="#94a3b8" fontSize={11}
+                                        width={90} axisLine={false} tickLine={false} />
+                                    <Tooltip {...tooltipStyle} cursor={{ fill: "#f8fafc" }} />
+                                    <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={18} animationDuration={1400}>
+                                        {data?.hot_zones.map((_, i) => (
+                                            <Cell key={i} fill={i === 0 ? "#15803d" : "#e2e8f0"} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </motion.div>
+                </div>
+            </div>
+        </>
     );
-  }
-
-  return (
-    <>
-      <Header title="Intelligence Analytics" />
-
-      <div className="flex-1 overflow-y-auto p-8 space-y-8">
-        {/* Top bar */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <div className="bg-emerald-500/10 p-3 rounded-2xl border border-emerald-500/20">
-              <BarChart3 className="w-6 h-6 text-emerald-400" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight text-white">System Intelligence</h2>
-              <p className="text-zinc-500 text-xs font-medium italic">Advanced behavioral pattern analysis</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleRefresh}
-              className="p-3.5 rounded-2xl border border-white/10 hover:bg-white/5 transition-all text-zinc-400"
-            >
-              <RefreshCcw className={`w-5 h-5 ${isRefreshing ? 'animate-spin text-emerald-500' : ''}`} />
-            </button>
-            <div className="bg-zinc-900/50 border border-white/10 px-6 py-3.5 rounded-2xl flex items-center gap-3">
-              <Calendar className="w-4 h-4 text-emerald-500" />
-              <span className="text-sm font-bold text-zinc-300">Last 7 Days</span>
-              <Filter className="w-4 h-4 text-zinc-600" />
-            </div>
-          </div>
-        </div>
-
-        {/* Charts Grid */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-
-          {/* Main Trend Chart */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="col-span-1 xl:col-span-2 bg-zinc-900/30 border border-white/5 rounded-[2.5rem] p-8 space-y-6"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <TrendingUp className="w-5 h-5 text-emerald-400" />
-                <h3 className="text-lg font-bold text-white tracking-tight">Activity Pulse</h3>
-              </div>
-              <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20">
-                <Zap className="w-3 h-3 text-emerald-400 animate-pulse" />
-                <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Real-time Feed</span>
-              </div>
-            </div>
-
-            <div className="h-[350px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={data?.daily_trend}>
-                  <defs>
-                    <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-                  <XAxis
-                    dataKey="date"
-                    stroke="#52525b"
-                    fontSize={10}
-                    fontWeight="bold"
-                    axisLine={false}
-                    tickLine={false}
-                    tickFormatter={(val) => val.split('-').slice(1).join('/')}
-                  />
-                  <YAxis
-                    stroke="#52525b"
-                    fontSize={10}
-                    fontWeight="bold"
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: '#09090b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px' }}
-                    itemStyle={{ color: '#10b981', fontWeight: 'bold' }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="count"
-                    stroke="#10b981"
-                    strokeWidth={4}
-                    fillOpacity={1}
-                    fill="url(#colorCount)"
-                    animationDuration={2000}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </motion.div>
-
-          {/* Rush Hour Chart */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-zinc-900/30 border border-white/5 rounded-[2.5rem] p-8 space-y-6"
-          >
-            <div className="flex items-center gap-3">
-              <Clock className="w-5 h-5 text-amber-400" />
-              <h3 className="text-lg font-bold text-white tracking-tight">Elephant Rush Hour</h3>
-            </div>
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data?.rush_hour}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-                  <XAxis
-                    dataKey="hour"
-                    stroke="#52525b"
-                    fontSize={9}
-                    fontWeight="bold"
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    stroke="#52525b"
-                    fontSize={10}
-                    fontWeight="bold"
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <Tooltip
-                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                    contentStyle={{ backgroundColor: '#09090b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px' }}
-                  />
-                  <Bar dataKey="count" radius={[4, 4, 0, 0]} animationDuration={1500}>
-                    {data?.rush_hour.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.count > 5 ? '#f59e0b' : '#3f3f46'} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </motion.div>
-
-          {/* Hot Zones Chart */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-zinc-900/30 border border-white/5 rounded-[2.5rem] p-8 space-y-6"
-          >
-            <div className="flex items-center gap-3">
-              <Map className="w-5 h-5 text-emerald-400" />
-              <h3 className="text-lg font-bold text-white tracking-tight">High Activity Zones</h3>
-            </div>
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart layout="vertical" data={data?.hot_zones}>
-                  <XAxis type="number" hide />
-                  <YAxis
-                    dataKey="name"
-                    type="category"
-                    stroke="#a1a1aa"
-                    fontSize={10}
-                    fontWeight="bold"
-                    width={80}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <Tooltip
-                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                    contentStyle={{ backgroundColor: '#09090b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px' }}
-                  />
-                  <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={20} animationDuration={1800}>
-                    {data?.hot_zones.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={index === 0 ? '#10b981' : '#18181b'} stroke={index === 0 ? 'none' : '#27272a'} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </motion.div>
-
-        </div>
-      </div>
-    </>
-  );
 }
