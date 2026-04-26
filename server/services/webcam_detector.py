@@ -66,6 +66,7 @@ def process_camera_stream(detector, cam, stop_event):
     seen_ids = set()
     alert_triggered = False
     alert_db_id = None
+    alert_count = 0          # final count used for the alert (Gemini-corrected when available)
     last_process_time = 0
     last_seen_time = time.time()
     
@@ -122,7 +123,7 @@ def process_camera_stream(detector, cam, stop_event):
                 # Log recording in DB if an alert was triggered
                 if alert_triggered and alert_db_id:
                     duration = int(now - recording_start_time)
-                    log_recording(alert_db_id, cam_id, recording_file, len(seen_ids), compute_direction_from_histories(trajectories), duration)
+                    log_recording(alert_db_id, cam_id, recording_file, alert_count or len(seen_ids), compute_direction_from_histories(trajectories), duration)
 
                 video_writer = None
                 is_recording = False
@@ -154,14 +155,22 @@ def process_camera_stream(detector, cam, stop_event):
                     except Exception as e:
                         print(f"⚠️ Failed to save snapshot: {e}")
 
-                    # --- Gemini Vision Verification (advisory only) ---
+                    # --- Gemini Vision Verification + Count ---
                     print(f"🔍 Sending frame to Gemini for verification (Camera {cam_id})...")
                     try:
                         gemini_result = GeminiVerificationService.verify_elephant(snapshot_path)
                     except Exception as gemini_ex:
                         print(f"⚠️ Gemini call raised unexpectedly: {gemini_ex} — alert will fire from YOLO")
-                        gemini_result = {"verified": None, "reason": f"Gemini error: {gemini_ex}", "raw_response": ""}
-                    print(f"🔍 Gemini: {'CONFIRMED ✅' if gemini_result['verified'] else ('UNCONFIRMED ⚠️' if gemini_result['verified'] is False else 'UNAVAILABLE ⚠️')} — {gemini_result['reason']}")
+                        gemini_result = {"verified": None, "count": None, "reason": f"Gemini error: {gemini_ex}", "raw_response": ""}
+                    print(f"🔍 Gemini: {'CONFIRMED ✅' if gemini_result['verified'] else ('UNCONFIRMED ⚠️' if gemini_result['verified'] is False else 'UNAVAILABLE ⚠️')} — count={gemini_result.get('count')} — {gemini_result['reason']}")
+
+                    # Use Gemini's count when available (more accurate than YOLO tracker IDs).
+                    # Fall back to YOLO count if Gemini didn't return one or returned 0 while YOLO sees elephants.
+                    gemini_count = gemini_result.get("count")
+                    if isinstance(gemini_count, int) and gemini_count > 0:
+                        alert_count = gemini_count
+                    else:
+                        alert_count = current_count
 
                     # Always fire alert — Gemini result is advisory context only
                     alert_db_id = trigger_production_alert(
@@ -169,7 +178,7 @@ def process_camera_stream(detector, cam, stop_event):
                         cam_name,
                         location,
                         avg_conf,
-                        current_count,
+                        alert_count,
                         current_dir,
                         cam_url=live_link,
                         image_path=snapshot_path,
@@ -193,17 +202,17 @@ def process_camera_stream(detector, cam, stop_event):
         # Final attempt to log if interrupted
         if is_recording and alert_triggered and alert_db_id:
              duration = int(time.time() - recording_start_time)
-             log_recording(alert_db_id, cam_id, recording_file, len(seen_ids), compute_direction_from_histories(trajectories), duration)
+             log_recording(alert_db_id, cam_id, recording_file, alert_count or len(seen_ids), compute_direction_from_histories(trajectories), duration)
 
         video_writer = None
         is_recording = False
         
     cap.release()
     
-    # Log encounter results
+    # Log encounter results — prefer Gemini-corrected count when an alert fired
     if seen_ids:
         direction = compute_direction_from_histories(trajectories)
-        log_encounter(cam_id, len(seen_ids), direction)
+        log_encounter(cam_id, alert_count or len(seen_ids), direction)
 
 def trigger_production_alert(cam_id, cam_name, location, confidence, count, direction, cam_url=None, image_path=None, gemini_verified=None, gemini_reason=None):
     alert_id = None

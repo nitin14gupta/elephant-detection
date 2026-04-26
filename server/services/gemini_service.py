@@ -25,9 +25,11 @@ class GeminiVerificationService:
     MODEL_NAME = "gemini-2.5-flash-lite"
     PROMPT = (
         "You are a wildlife monitoring AI. Analyze this camera image carefully.\n"
-        "Is there an elephant visible in this image?\n"
+        "1. Is there an elephant visible in this image?\n"
+        "2. Count the exact number of elephants visible (count each distinct elephant body, including partially visible ones).\n"
         "Respond in exactly this format:\n"
         "VERIFIED: YES or NO\n"
+        "COUNT: <integer>\n"
         "REASON: one brief sentence\n"
     )
 
@@ -50,17 +52,18 @@ class GeminiVerificationService:
         Returns:
             {
                 "verified": bool | None,   # None = skipped/unavailable
+                "count": int | None,       # Gemini-counted elephants, None if unavailable
                 "reason": str,
                 "raw_response": str
             }
         """
         if not _genai_available:
             logger.warning("Gemini unavailable — skipping verification")
-            return {"verified": None, "reason": "Gemini library not installed", "raw_response": ""}
+            return {"verified": None, "count": None, "reason": "Gemini library not installed", "raw_response": ""}
 
         if not image_path or not os.path.exists(image_path):
             logger.warning(f"Snapshot not found at {image_path} — skipping verification")
-            return {"verified": None, "reason": "No snapshot available", "raw_response": ""}
+            return {"verified": None, "count": None, "reason": "No snapshot available", "raw_response": ""}
 
         try:
             client = cls._get_client()
@@ -79,15 +82,30 @@ class GeminiVerificationService:
             raw = response.text.strip()
             logger.info(f"Gemini response: {raw}")
 
-            verified = "VERIFIED: YES" in raw.upper()
+            upper = raw.upper()
+            verified = "VERIFIED: YES" in upper
+
+            count = None
+            count_line = next(
+                (line for line in raw.splitlines() if line.upper().startswith("COUNT:")),
+                None,
+            )
+            if count_line:
+                try:
+                    digits = "".join(ch for ch in count_line.split(":", 1)[-1] if ch.isdigit())
+                    if digits:
+                        count = int(digits)
+                except ValueError:
+                    count = None
+
             reason_line = next(
                 (line for line in raw.splitlines() if line.upper().startswith("REASON:")),
                 "REASON: No reason provided",
             )
             reason = reason_line.split(":", 1)[-1].strip()
 
-            return {"verified": verified, "reason": reason, "raw_response": raw}
+            return {"verified": verified, "count": count, "reason": reason, "raw_response": raw}
 
         except Exception as e:
             logger.error(f"Gemini verification failed: {e}")
-            return {"verified": None, "reason": f"Gemini error: {e}", "raw_response": ""}
+            return {"verified": None, "count": None, "reason": f"Gemini error: {e}", "raw_response": ""}
