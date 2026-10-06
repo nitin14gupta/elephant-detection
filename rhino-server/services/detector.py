@@ -11,7 +11,10 @@ DETECT_TYPES = ("rhino", "human", "both")
 # To switch to custom trained weights later, set model_path to your .pt and drop "world_classes".
 # class_ids=None means "keep every class the model outputs".
 DETECTOR_CONFIG = {
-    "rhino": {"model_path": "models/yolov8s-worldv2.pt", "world_classes": ["rhinoceros"], "class_ids": None, "conf_thresh": 0.35},
+    # Rhino: runs fully locally with YOLO-World (open-vocabulary, prompt "rhinoceros"). No internet needed.
+    # Open-vocab confidences are low, hence the low threshold. For better accuracy, train a rhino YOLO .pt
+    # and replace this entry (drop "world_classes").
+    "rhino": {"model_path": "models/yolov8x-worldv2.pt", "world_classes": ["rhinoceros"], "class_ids": None, "conf_thresh": 0.15},
     "human": {"model_path": "models/yolo11m.pt", "class_ids": [0], "conf_thresh": 0.7},  # COCO 0 = person
 }
 

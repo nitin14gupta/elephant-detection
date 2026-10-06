@@ -73,7 +73,7 @@ def test_gemini_verification(snapshot_path: str):
 # STEP 3: Full pipeline (integration test)
 # ─────────────────────────────────────────────
 def test_full_pipeline():
-    print("\n[STEP 3] Running full pipeline integration test (YOLO → Gemini → Alert → Telegram)...")
+    print("\n[STEP 3] Running full pipeline integration test (YOLO → Gemini → Alert → WhatsApp)...")
 
     detectors = load_detectors()
 

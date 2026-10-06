@@ -1,2 +1,23 @@
 /venv
 .env
+__pycache__/
+*.pyc
+
+# runtime output / local data
+server_run.log
+*.log
+/data/*.db
+/recordings/
+/test_output/
+/test_output_rhino/
+*.mp4
+
+# model weights (large, download or train locally)
+/models/*.pt
+!/models/yolo11m.pt
+/models/*.h5
+
+# training workspace (venv, datasets, runs)
+/training/venv/
+/training/data/
+/training/runs/

@@ -8,7 +8,7 @@ import uuid
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from services.telegram_service import TelegramService
+from services.whatsapp_service import WhatsAppService
 from services.gemini_service import GeminiVerificationService
 from services.detector import load_detectors, labels_for
 from services.tracker import CentroidTracker
@@ -174,7 +174,7 @@ def process_camera_stream(detectors, cam, stop_event):
                     current_dir = compute_direction_from_histories(st.trajectories)
                     print(f"🎯 YOLO detected {label} on Camera {cam_id}! Count: {current_count}, Direction: {current_dir}")
 
-                    # Capture a snapshot for Gemini verification and Telegram
+                    # Capture a snapshot for Gemini verification and WhatsApp
                     snapshot_path = None
                     try:
                         snapshot_path = f"{recordings_dir}/snapshot_{label}.jpg"
@@ -269,7 +269,7 @@ def trigger_production_alert(cam_id, cam_name, location, confidence, count, dire
         db.close()
 
     try:
-        TelegramService.send_alert(
+        WhatsAppService.send_alert(
             camera_name=cam_name,
             location=location,
             confidence=confidence,
@@ -282,7 +282,7 @@ def trigger_production_alert(cam_id, cam_name, location, confidence, count, dire
             gemini_reason=gemini_reason,
         )
     except Exception as e:
-        print(f"❌ Failed to send Telegram alert for camera {cam_id}:", e)
+        print(f"❌ Failed to send WhatsApp alert for camera {cam_id}:", e)
 
     return alert_id
 
