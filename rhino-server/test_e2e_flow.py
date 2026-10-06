@@ -82,7 +82,7 @@ def test_full_pipeline():
             "id": 35,
             "name": "Nayek Kata",
             "location": "Nayek Kata",
-            "live_link": "video/elephant1.webm",   # ← replace with actual stream URL
+            "live_link": "video.mp4",   # ← replace with actual stream URL
             "detect_type": "rhino",
         }
     ]
@@ -181,7 +181,7 @@ def run_test():
     print(f"  DB: {os.environ['DATABASE_URL']}")
 
     # Unit test: YOLO on a sample frame
-    sample_video = "video/elephant1.webm"
+    sample_video = "video.mp4"
     detector = load_detectors().get("rhino")
     sample_frame = None
 
