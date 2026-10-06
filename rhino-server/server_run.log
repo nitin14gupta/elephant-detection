@@ -205,3 +205,169 @@ INFO:     127.0.0.1:56863 - "GET /api/stats HTTP/1.1" 200 OK
 INFO:     127.0.0.1:56863 - "GET /api/stats HTTP/1.1" 200 OK
 INFO:     127.0.0.1:59263 - "GET /api/cameras HTTP/1.1" 200 OK
 INFO:     127.0.0.1:56863 - "GET /api/cameras HTTP/1.1" 200 OK
+🎬 Starting batch monitoring for Camera 2 (Camera 13) [human]...
+✅ Spawned monitoring thread for Camera 2
+🎬 Starting batch monitoring for Camera 3 (Camera 19) [human]...
+✅ Spawned monitoring thread for Camera 3
+⚠️ Failed to open stream for Camera 2: https://www.ttspl.live:8080/hls/cam13.m3u8. Skipping this batch.
+⚠️ Failed to open stream for Camera 3: https://www.ttspl.live:8080/hls/cam19.m3u8. Skipping this batch.
+🎬 Starting batch monitoring for Camera 2 (Camera 13) [human]...
+✅ Spawned monitoring thread for Camera 2
+🎬 Starting batch monitoring for Camera 3 (Camera 19) [human]...
+✅ Spawned monitoring thread for Camera 3
+⚠️ Failed to open stream for Camera 2: https://www.ttspl.live:8080/hls/cam13.m3u8. Skipping this batch.
+⚠️ Failed to open stream for Camera 3: https://www.ttspl.live:8080/hls/cam19.m3u8. Skipping this batch.
+🎬 Starting batch monitoring for Camera 2 (Camera 13) [human]...
+✅ Spawned monitoring thread for Camera 2
+🎬 Starting batch monitoring for Camera 3 (Camera 19) [human]...
+✅ Spawned monitoring thread for Camera 3
+⚠️ Failed to open stream for Camera 2: https://www.ttspl.live:8080/hls/cam13.m3u8. Skipping this batch.
+⚠️ Failed to open stream for Camera 3: https://www.ttspl.live:8080/hls/cam19.m3u8. Skipping this batch.
+🎬 Starting batch monitoring for Camera 2 (Camera 13) [human]...
+✅ Spawned monitoring thread for Camera 2
+🎬 Starting batch monitoring for Camera 3 (Camera 19) [human]...
+✅ Spawned monitoring thread for Camera 3
+⚠️ Failed to open stream for Camera 2: https://www.ttspl.live:8080/hls/cam13.m3u8. Skipping this batch.
+⚠️ Failed to open stream for Camera 3: https://www.ttspl.live:8080/hls/cam19.m3u8. Skipping this batch.
+🎬 Starting batch monitoring for Camera 2 (Camera 13) [human]...
+✅ Spawned monitoring thread for Camera 2
+🎬 Starting batch monitoring for Camera 3 (Camera 19) [human]...
+✅ Spawned monitoring thread for Camera 3
+⚠️ Failed to open stream for Camera 2: https://www.ttspl.live:8080/hls/cam13.m3u8. Skipping this batch.
+⚠️ Failed to open stream for Camera 3: https://www.ttspl.live:8080/hls/cam19.m3u8. Skipping this batch.
+🎬 Starting batch monitoring for Camera 2 (Camera 13) [human]...
+✅ Spawned monitoring thread for Camera 2
+🎬 Starting batch monitoring for Camera 3 (Camera 19) [human]...
+✅ Spawned monitoring thread for Camera 3
+⏩ [CAM-3] Nothing seen in 5s → Rotating to next batch.
+⏩ [CAM-2] Nothing seen in 5s → Rotating to next batch.
+🎬 Starting batch monitoring for Camera 2 (Camera 13) [human]...
+✅ Spawned monitoring thread for Camera 2
+🎬 Starting batch monitoring for Camera 3 (Camera 19) [human]...
+✅ Spawned monitoring thread for Camera 3
+⏩ [CAM-2] Nothing seen in 5s → Rotating to next batch.
+⏩ [CAM-3] Nothing seen in 5s → Rotating to next batch.
+🎬 Starting batch monitoring for Camera 2 (Camera 13) [human]...
+✅ Spawned monitoring thread for Camera 2
+🎬 Starting batch monitoring for Camera 3 (Camera 19) [human]...
+✅ Spawned monitoring thread for Camera 3
+⏩ [CAM-3] Nothing seen in 5s → Rotating to next batch.
+⏩ [CAM-2] Nothing seen in 5s → Rotating to next batch.
+🎬 Starting batch monitoring for Camera 2 (Camera 13) [human]...
+✅ Spawned monitoring thread for Camera 2
+🎬 Starting batch monitoring for Camera 3 (Camera 19) [human]...
+✅ Spawned monitoring thread for Camera 3
+⏩ [CAM-3] Nothing seen in 5s → Rotating to next batch.
+⏩ [CAM-2] Nothing seen in 5s → Rotating to next batch.
+🎬 Starting batch monitoring for Camera 2 (Camera 13) [human]...
+✅ Spawned monitoring thread for Camera 2
+🎬 Starting batch monitoring for Camera 3 (Camera 19) [human]...
+✅ Spawned monitoring thread for Camera 3
+⏩ [CAM-2] Nothing seen in 5s → Rotating to next batch.
+INFO:     127.0.0.1:56952 - "GET /api/cameras HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56486 - "GET /api/cameras HTTP/1.1" 200 OK
+⏩ [CAM-3] Nothing seen in 5s → Rotating to next batch.
+🎬 Starting batch monitoring for Camera 2 (Camera 13) [human]...
+✅ Spawned monitoring thread for Camera 2
+🎬 Starting batch monitoring for Camera 3 (Camera 19) [human]...
+✅ Spawned monitoring thread for Camera 3
+⏩ [CAM-3] Nothing seen in 5s → Rotating to next batch.
+⏩ [CAM-2] Nothing seen in 5s → Rotating to next batch.
+INFO:     127.0.0.1:62529 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61102 - "GET /api/cameras HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62529 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51779 - "GET /api/cameras HTTP/1.1" 200 OK
+🎬 Starting batch monitoring for Camera 2 (Camera 13) [human]...
+✅ Spawned monitoring thread for Camera 2
+🎬 Starting batch monitoring for Camera 3 (Camera 19) [human]...
+✅ Spawned monitoring thread for Camera 3
+⏩ [CAM-3] Nothing seen in 5s → Rotating to next batch.
+⏩ [CAM-2] Nothing seen in 5s → Rotating to next batch.
+🎬 Starting batch monitoring for Camera 2 (Camera 13) [human]...
+✅ Spawned monitoring thread for Camera 2
+🎬 Starting batch monitoring for Camera 3 (Camera 19) [human]...
+✅ Spawned monitoring thread for Camera 3
+⏩ [CAM-3] Nothing seen in 5s → Rotating to next batch.
+⏩ [CAM-2] Nothing seen in 5s → Rotating to next batch.
+🎬 Starting batch monitoring for Camera 2 (Camera 13) [human]...
+✅ Spawned monitoring thread for Camera 2
+🎬 Starting batch monitoring for Camera 3 (Camera 19) [human]...
+✅ Spawned monitoring thread for Camera 3
+⏩ [CAM-3] Nothing seen in 5s → Rotating to next batch.
+⏩ [CAM-2] Nothing seen in 5s → Rotating to next batch.
+🎬 Starting batch monitoring for Camera 2 (Camera 13) [human]...
+✅ Spawned monitoring thread for Camera 2
+🎬 Starting batch monitoring for Camera 3 (Camera 19) [human]...
+✅ Spawned monitoring thread for Camera 3
+INFO:     127.0.0.1:52208 - "GET /api/cameras HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52208 - "GET /api/cameras HTTP/1.1" 200 OK
+⏩ [CAM-2] Nothing seen in 5s → Rotating to next batch.
+⏩ [CAM-3] Nothing seen in 5s → Rotating to next batch.
+🎬 Starting batch monitoring for Camera 2 (Camera 13) [human]...
+✅ Spawned monitoring thread for Camera 2
+🎬 Starting batch monitoring for Camera 3 (Camera 19) [human]...
+✅ Spawned monitoring thread for Camera 3
+⏩ [CAM-2] Nothing seen in 5s → Rotating to next batch.
+⏩ [CAM-3] Nothing seen in 5s → Rotating to next batch.
+🎬 Starting batch monitoring for Camera 2 (Camera 13) [human]...
+✅ Spawned monitoring thread for Camera 2
+🎬 Starting batch monitoring for Camera 3 (Camera 19) [human]...
+✅ Spawned monitoring thread for Camera 3
+⏩ [CAM-3] Nothing seen in 5s → Rotating to next batch.
+⏩ [CAM-2] Nothing seen in 5s → Rotating to next batch.
+🎬 Starting batch monitoring for Camera 2 (Camera 13) [human]...
+✅ Spawned monitoring thread for Camera 2
+🎬 Starting batch monitoring for Camera 3 (Camera 19) [human]...
+✅ Spawned monitoring thread for Camera 3
+⏩ [CAM-2] Nothing seen in 5s → Rotating to next batch.
+⏩ [CAM-3] Nothing seen in 5s → Rotating to next batch.
+🎬 Starting batch monitoring for Camera 2 (Camera 13) [human]...
+✅ Spawned monitoring thread for Camera 2
+🎬 Starting batch monitoring for Camera 3 (Camera 19) [human]...
+✅ Spawned monitoring thread for Camera 3
+⏩ [CAM-3] Nothing seen in 5s → Rotating to next batch.
+⏩ [CAM-2] Nothing seen in 5s → Rotating to next batch.
+🎬 Starting batch monitoring for Camera 2 (Camera 13) [human]...
+✅ Spawned monitoring thread for Camera 2
+🎬 Starting batch monitoring for Camera 3 (Camera 19) [human]...
+✅ Spawned monitoring thread for Camera 3
+⏩ [CAM-2] Nothing seen in 5s → Rotating to next batch.
+⏩ [CAM-3] Nothing seen in 5s → Rotating to next batch.
+🎬 Starting batch monitoring for Camera 2 (Camera 13) [human]...
+✅ Spawned monitoring thread for Camera 2
+🎬 Starting batch monitoring for Camera 3 (Camera 19) [human]...
+✅ Spawned monitoring thread for Camera 3
+⏩ [CAM-3] Nothing seen in 5s → Rotating to next batch.
+⏩ [CAM-2] Nothing seen in 5s → Rotating to next batch.
+🎬 Starting batch monitoring for Camera 2 (Camera 13) [human]...
+✅ Spawned monitoring thread for Camera 2
+🎬 Starting batch monitoring for Camera 3 (Camera 19) [human]...
+✅ Spawned monitoring thread for Camera 3
+⏩ [CAM-3] Nothing seen in 5s → Rotating to next batch.
+⏩ [CAM-2] Nothing seen in 5s → Rotating to next batch.
+🎬 Starting batch monitoring for Camera 2 (Camera 13) [human]...
+✅ Spawned monitoring thread for Camera 2
+🎬 Starting batch monitoring for Camera 3 (Camera 19) [human]...
+✅ Spawned monitoring thread for Camera 3
+INFO:     127.0.0.1:64390 - "POST /api/cameras HTTP/1.1" 201 Created
+INFO:     127.0.0.1:64390 - "GET /api/cameras HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64390 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50894 - "GET /api/cameras HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64390 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65434 - "GET /api/cameras HTTP/1.1" 200 OK
+⏩ [CAM-3] Nothing seen in 5s → Rotating to next batch.
+⏩ [CAM-2] Nothing seen in 5s → Rotating to next batch.
+INFO:     127.0.0.1:55009 - "GET /api/cameras HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55009 - "GET /api/cameras HTTP/1.1" 200 OK
+🎬 Starting batch monitoring for Camera 2 (Camera 13) [human]...
+✅ Spawned monitoring thread for Camera 2
+🎬 Starting batch monitoring for Camera 3 (Camera 19) [human]...
+✅ Spawned monitoring thread for Camera 3
+⚠️ Camera 4 (Camera 2) set to 'rhino' but no matching model is loaded. Skipping.
+✅ Spawned monitoring thread for Camera 4
+⚠️ Failed to open stream for Camera 2: https://www.ttspl.live:8080/hls/cam13.m3u8. Skipping this batch.
+⚠️ Failed to open stream for Camera 3: https://www.ttspl.live:8080/hls/cam19.m3u8. Skipping this batch.
+INFO:     127.0.0.1:55009 - "DELETE /api/cameras/1 HTTP/1.1" 405 Method Not Allowed
+INFO:     127.0.0.1:50555 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50555 - "GET /api/cameras HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50555 - "GET /api/cameras HTTP/1.1" 200 OK
