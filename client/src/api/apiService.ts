@@ -81,6 +81,23 @@ class ApiService {
         return this.handleResponse(response);
     }
 
+    async editCamera(id: number, cameraData: any) {
+        const response = await fetch(`${this.baseURL}${API_CONFIG.ENDPOINTS.CAMERAS.UPDATE(id)}`, {
+            method: 'PATCH',
+            headers: this.getHeaders(true),
+            body: JSON.stringify(cameraData),
+        });
+        return this.handleResponse(response);
+    }
+
+    async deleteCamera(id: number) {
+        const response = await fetch(`${this.baseURL}${API_CONFIG.ENDPOINTS.CAMERAS.UPDATE(id)}`, {
+            method: 'DELETE',
+            headers: this.getHeaders(true),
+        });
+        return this.handleResponse(response);
+    }
+
     async addCamera(cameraData: any) {
         const response = await fetch(`${this.baseURL}${API_CONFIG.ENDPOINTS.CAMERAS.LIST}`, {
             method: 'POST',

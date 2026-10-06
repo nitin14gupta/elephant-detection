@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Camera, MapPin, Search, CheckCircle2, RefreshCcw, ExternalLink, Loader2, Plus, X } from "lucide-react";
+import { Camera, MapPin, Search, CheckCircle2, RefreshCcw, ExternalLink, Loader2, Plus, X, Pencil, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiService } from "@/src/api/apiService";
 import Header from "@/src/components/dashboard/Header";
@@ -11,6 +11,8 @@ interface CameraNode {
     name: string;
     location: string;
     live_link: string;
+    lat?: number | null;
+    long?: number | null;
     is_active: boolean;
     last_active_at: string | null;
 }
@@ -21,7 +23,10 @@ export default function LiveCamPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [togglingId, setTogglingId] = useState<number | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [newCam, setNewCam] = useState({ name: "", location: "", live_link: "", lat: "", long: "" });
+    const emptyCam = { name: "", location: "", live_link: "", lat: "", long: "" };
+    const [newCam, setNewCam] = useState(emptyCam);
+    const [editingId, setEditingId] = useState<number | null>(null);
+    const [deletingId, setDeletingId] = useState<number | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const fetchCameras = async () => {
@@ -43,16 +48,48 @@ export default function LiveCamPage() {
         finally { setTogglingId(null); }
     };
 
-    const handleAddCamera = async (e: React.FormEvent) => {
+    const openAdd = () => {
+        setEditingId(null);
+        setNewCam(emptyCam);
+        setIsModalOpen(true);
+    };
+
+    const openEdit = (cam: CameraNode) => {
+        setEditingId(cam.id);
+        setNewCam({
+            ...emptyCam,
+            name: cam.name,
+            location: cam.location || "",
+            live_link: cam.live_link,
+            lat: cam.lat != null ? String(cam.lat) : "",
+            long: cam.long != null ? String(cam.long) : "",
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleSaveCamera = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
+        const payload = { ...newCam, lat: newCam.lat ? parseFloat(newCam.lat) : null, long: newCam.long ? parseFloat(newCam.long) : null };
         try {
-            await apiService.addCamera({ ...newCam, lat: newCam.lat ? parseFloat(newCam.lat) : null, long: newCam.long ? parseFloat(newCam.long) : null });
+            if (editingId !== null) await apiService.editCamera(editingId, payload);
+            else await apiService.addCamera(payload);
             setIsModalOpen(false);
-            setNewCam({ name: "", location: "", live_link: "", lat: "", long: "" });
+            setEditingId(null);
+            setNewCam(emptyCam);
             fetchCameras();
-        } catch { console.error("Failed to add camera"); }
+        } catch { console.error("Failed to save camera"); }
         finally { setIsSubmitting(false); }
+    };
+
+    const handleDelete = async (cam: CameraNode) => {
+        if (!window.confirm(`Delete "${cam.name}"? Its alerts, recordings and detection history will be removed too.`)) return;
+        setDeletingId(cam.id);
+        try {
+            await apiService.deleteCamera(cam.id);
+            setCameras(cameras.filter(c => c.id !== cam.id));
+        } catch { console.error("Failed to delete camera"); }
+        finally { setDeletingId(null); }
     };
 
     const filtered = cameras.filter(c =>
@@ -84,7 +121,7 @@ export default function LiveCamPage() {
                             <RefreshCcw className={`w-4 h-4 ${loading ? "animate-spin text-green-700" : ""}`} />
                         </button>
                         <button
-                            onClick={() => setIsModalOpen(true)}
+                            onClick={openAdd}
                             className="flex items-center gap-2 bg-green-700 hover:bg-green-600 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors"
                         >
                             <Plus className="w-4 h-4" /> Add Camera
@@ -102,17 +139,18 @@ export default function LiveCamPage() {
                                     <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</th>
                                     <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Status</th>
                                     <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Active</th>
+                                    <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                 <AnimatePresence mode="popLayout">
                                     {loading ? (
-                                        <tr><td colSpan={4} className="px-5 py-16 text-center">
+                                        <tr><td colSpan={5} className="px-5 py-16 text-center">
                                             <Loader2 className="w-6 h-6 animate-spin text-green-700 mx-auto mb-3" />
                                             <p className="text-sm text-gray-500">Loading cameras...</p>
                                         </td></tr>
                                     ) : filtered.length === 0 ? (
-                                        <tr><td colSpan={4} className="px-5 py-16 text-center text-sm text-gray-400">No cameras found.</td></tr>
+                                        <tr><td colSpan={5} className="px-5 py-16 text-center text-sm text-gray-400">No cameras found.</td></tr>
                                     ) : filtered.map((cam) => (
                                         <motion.tr key={cam.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                                             className="hover:bg-gray-50 transition-colors">
@@ -166,6 +204,18 @@ export default function LiveCamPage() {
                                                     </button>
                                                 </div>
                                             </td>
+                                            <td className="px-5 py-4">
+                                                <div className="flex justify-end gap-1">
+                                                    <button onClick={() => openEdit(cam)} title="Edit camera"
+                                                        className="p-2 rounded-lg text-gray-400 hover:text-green-700 hover:bg-green-50 transition-colors">
+                                                        <Pencil className="w-4 h-4" />
+                                                    </button>
+                                                    <button onClick={() => handleDelete(cam)} disabled={deletingId === cam.id} title="Delete camera"
+                                                        className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50">
+                                                        {deletingId === cam.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                                                    </button>
+                                                </div>
+                                            </td>
                                         </motion.tr>
                                     ))}
                                 </AnimatePresence>
@@ -188,14 +238,14 @@ export default function LiveCamPage() {
                         >
                             <div className="px-6 py-5 border-b border-gray-200 flex items-center justify-between">
                                 <div>
-                                    <h2 className="text-base font-semibold text-gray-900">Add New Camera</h2>
-                                    <p className="text-xs text-gray-500 mt-0.5">Register a new camera stream to the fleet</p>
+                                    <h2 className="text-base font-semibold text-gray-900">{editingId !== null ? "Edit Camera" : "Add New Camera"}</h2>
+                                    <p className="text-xs text-gray-500 mt-0.5">{editingId !== null ? "Update this camera's details" : "Register a new camera stream to the fleet"}</p>
                                 </div>
                                 <button onClick={() => setIsModalOpen(false)} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 transition-colors">
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>
-                            <form onSubmit={handleAddCamera} className="p-6 space-y-4">
+                            <form onSubmit={handleSaveCamera} className="p-6 space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1.5 col-span-2 sm:col-span-1">
                                         <label className="text-xs font-medium text-gray-600">Camera Name *</label>
@@ -226,7 +276,7 @@ export default function LiveCamPage() {
                                 <div className="pt-2">
                                     <button disabled={isSubmitting}
                                         className="w-full bg-green-700 hover:bg-green-600 text-white py-2.5 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-60">
-                                        {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CheckCircle2 className="w-4 h-4" /> Register Camera</>}
+                                        {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CheckCircle2 className="w-4 h-4" /> {editingId !== null ? "Save Changes" : "Register Camera"}</>}
                                     </button>
                                 </div>
                             </form>

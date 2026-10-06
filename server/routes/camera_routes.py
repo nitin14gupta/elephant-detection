@@ -11,7 +11,12 @@ router = APIRouter(tags=["cameras"])
 
 
 class CameraUpdate(BaseModel):
-    is_active: bool
+    is_active: Optional[bool] = None
+    name: Optional[str] = None
+    location: Optional[str] = None
+    live_link: Optional[str] = None
+    lat: Optional[float] = None
+    long: Optional[float] = None
 
 
 class CameraCreate(BaseModel):
@@ -77,16 +82,38 @@ async def update_camera(cam_id: int, update: CameraUpdate, current_user: str = D
     if not cam:
         raise HTTPException(status_code=404, detail="Camera not found")
 
-    cam.is_active = update.is_active
-    now = datetime.utcnow()
-    if update.is_active:
-        cam.last_active_at = now
-    else:
-        cam.last_inactive_at = now
+    fields = update.dict(exclude_unset=True)
+    if "is_active" in fields and fields["is_active"] is not None:
+        cam.is_active = fields["is_active"]
+        now = datetime.utcnow()
+        if cam.is_active:
+            cam.last_active_at = now
+        else:
+            cam.last_inactive_at = now
+    for key in ("name", "location", "live_link", "lat", "long"):
+        if key in fields and (fields[key] is not None or key in ("location", "lat", "long")):
+            setattr(cam, key, fields[key])
 
     db.commit()
     db.refresh(cam)
     return {"id": cam.id, "is_active": cam.is_active}
+
+
+@router.delete("/api/cameras/{cam_id}")
+async def delete_camera(cam_id: int, current_user: str = Depends(get_current_user), db: Session = Depends(get_db)):
+    cam = db.query(Camera).filter(Camera.id == cam_id).first()
+    if not cam:
+        raise HTTPException(status_code=404, detail="Camera not found")
+    try:
+        # SQLite doesn't enforce ON DELETE CASCADE, so remove the camera's history explicitly
+        for model in (Recording, Alert, Encounter):
+            db.query(model).filter(model.cam_id == cam_id).delete()
+        db.delete(cam)
+        db.commit()
+        return {"status": "deleted", "id": cam_id}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/api/detect")

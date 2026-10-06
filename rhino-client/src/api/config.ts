@@ -1,0 +1,51 @@
+// API Configuration
+export const API_CONFIG = {
+    BASE_URL: process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost'
+        ? 'http://localhost:8001'
+        : ''),
+
+    ENDPOINTS: {
+        AUTH: {
+            LOGIN: '/api/auth/login',
+            ME: '/api/auth/me',
+        },
+        STATS: '/api/stats',
+        CAMERAS: {
+            LIST: '/api/cameras',
+            UPDATE: (id: number) => `/api/cameras/${id}`,
+        },
+        ALERTS: '/api/alerts',
+        ANALYTICS: '/api/analytics',
+        RECORDINGS: '/api/recordings'
+    },
+
+    DEFAULT_HEADERS: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+    },
+};
+
+// Storage keys
+export const STORAGE_KEYS = {
+    AUTH_TOKEN: 'rhino_auth_token',
+    REFRESH_TOKEN: 'rhino_refresh_token',
+    USER_DATA: 'rhino_user_data',
+};
+
+// API Response types
+export interface ApiResponse<T = any> {
+    success: boolean;
+    data?: T;
+    message?: string;
+    error?: string;
+}
+
+export interface AuthResponse {
+    token: string;
+    refreshToken: string;
+    user: {
+        id?: string;
+        email: string;
+        name?: string;
+    };
+}
