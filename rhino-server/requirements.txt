@@ -20,4 +20,3 @@ passlib[bcrypt]
 bcrypt==4.0.1
 imutils
 google-genai
-git+https://github.com/ultralytics/CLIP.git

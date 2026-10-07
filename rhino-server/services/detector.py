@@ -1,20 +1,16 @@
 import os
 import numpy as np
 import threading
-from ultralytics import YOLO, YOLOWorld
+from ultralytics import YOLO
 
 # What each camera can be set to detect. "both" runs the rhino and human detectors.
 DETECT_TYPES = ("rhino", "human", "both")
 
 # label -> (weights file, class ids to keep, confidence threshold)
-# Rhino has no COCO class, so it uses YOLO-World (open-vocabulary, prompt-based) locally.
-# To switch to custom trained weights later, set model_path to your .pt and drop "world_classes".
 # class_ids=None means "keep every class the model outputs".
 DETECTOR_CONFIG = {
-    # Rhino: runs fully locally with YOLO-World (open-vocabulary, prompt "rhinoceros"). No internet needed.
-    # Open-vocab confidences are low, hence the low threshold. For better accuracy, train a rhino YOLO .pt
-    # and replace this entry (drop "world_classes").
-    "rhino": {"model_path": "models/yolov8x-worldv2.pt", "world_classes": ["rhinoceros"], "class_ids": None, "conf_thresh": 0.15},
+    # Rhino: custom YOLO11s trained locally (training/prepare_dataset.py + ultralytics, see training/README.md).
+    "rhino": {"model_path": "models/rhino.pt", "class_ids": None, "conf_thresh": 0.5},
     "human": {"model_path": "models/yolo11m.pt", "class_ids": [0], "conf_thresh": 0.7},  # COCO 0 = person
 }
 
@@ -27,13 +23,9 @@ def labels_for(detect_type):
 
 
 class ObjectDetector:
-    def __init__(self, label, model_path, class_ids=None, conf_thresh=0.7, world_classes=None):
+    def __init__(self, label, model_path, class_ids=None, conf_thresh=0.7):
         self.label = label
-        if world_classes:
-            self.model = YOLOWorld(model_path)
-            self.model.set_classes(world_classes)
-        else:
-            self.model = YOLO(model_path)
+        self.model = YOLO(model_path)
         self.class_ids = set(class_ids) if class_ids is not None else None
         self.conf_thresh = conf_thresh
         self.lock = threading.Lock()

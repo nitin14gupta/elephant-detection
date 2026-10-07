@@ -15,6 +15,7 @@ server_run.log
 # model weights (large, download or train locally)
 /models/*.pt
 !/models/yolo11m.pt
+!/models/rhino.pt
 /models/*.h5
 
 # training workspace (venv, datasets, runs)
