@@ -6,7 +6,6 @@ __pycache__/
 # runtime output / local data
 server_run.log
 *.log
-/data/*.db
 /recordings/
 /test_output/
 /test_output_rhino/
