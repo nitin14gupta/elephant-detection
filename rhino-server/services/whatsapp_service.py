@@ -9,7 +9,28 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# panel.aditeksys.com only sends its own certificate and not the Sectigo intermediate, so Python/OpenSSL
+# cannot verify it (browsers fetch the missing intermediate themselves). Verification stays ON: we add the
+# public Sectigo intermediate (certs/sectigo_dv_r36.pem) to the normal CA list.
+_CA_BUNDLE = None
+
+
+def _ca_bundle() -> str:
+    global _CA_BUNDLE
+    if _CA_BUNDLE is None:
+        import certifi
+        import tempfile
+        extra = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "certs", "sectigo_dv_r36.pem")
+        fd, path = tempfile.mkstemp(suffix=".pem")
+        with os.fdopen(fd, "wb") as out:
+            out.write(open(certifi.where(), "rb").read() + b"\n")
+            if os.path.exists(extra):
+                out.write(open(extra, "rb").read())
+        _CA_BUNDLE = path
+    return _CA_BUNDLE
 
 
 class WhatsAppService:
@@ -30,7 +51,7 @@ class WhatsAppService:
       {{5}} zone                    {{6}} time    {{7}} Gemini verification
     """
 
-    API_URL = "https://panel.aditeksys.com/restapi/requestjson.php"
+    API_URL = "https://panel.aditeksys.com/restapi/requestjson.php"   # the bulk "version 2.0 / data[]" format returns "Mandatory Values Missing" on this account
     MAX_RETRIES = 3
     RETRY_DELAY = 2  # seconds
 
@@ -68,7 +89,7 @@ class WhatsAppService:
     @classmethod
     def build_payloads(cls, recipients, label, camera_name, location, count, direction,
                        gemini_verified=None, gemini_reason=None, image_path=None):
-        """Returns a list of JSON bodies (one per country code) for the requestjson.php API."""
+        """Returns one JSON body per recipient for the requestjson.php API (single-message format)."""
         body_values = {
             "1": label.upper(),
             "2": f"{count} {label.capitalize() if count == 1 else label.capitalize() + 's'}",
@@ -86,29 +107,33 @@ class WhatsAppService:
         if not wid:
             return []
 
-        by_cc = {}
+        payloads = []
         for number in recipients:
             cc, mobile = cls._split_number(number)
-            entry = {"mobile": mobile, "bodyValues": body_values}
+            payload = {"country_code": cc, "mobile": mobile, "wid": wid,
+                       "type": "media" if use_media else "text", "bodyValues": body_values}
             if use_media:
-                entry["headerValues"] = {"headerData": img_url}
-            by_cc.setdefault(cc, []).append(entry)
-
-        return [
-            {"version": "2.0", "country_code": cc, "wid": wid,
-             "type": "media" if use_media else "text", "data": entries}
-            for cc, entries in by_cc.items()
-        ]
+                payload["headerValues"] = {"headerData": img_url}
+            payloads.append(payload)
+        return payloads
 
     @classmethod
     def _post_with_retry(cls, payload: dict) -> bool:
         headers = {"Authorization": f"Basic {os.getenv('WHATSAPP_AUTHKEY')}", "Content-Type": "application/json"}
         for attempt in range(cls.MAX_RETRIES):
             try:
-                response = requests.post(cls.API_URL, json=payload, headers=headers, timeout=15)
+                response = requests.post(cls.API_URL, json=payload, headers=headers, timeout=15, verify=_ca_bundle())
                 if response.status_code == 200:
-                    logger.info(f"WhatsApp API response: {response.text[:300]}")
-                    return True
+                    body = {}
+                    try:
+                        body = response.json()
+                    except Exception:
+                        pass
+                    if str(body.get("status", "")).lower() == "success":
+                        logger.info(f"WhatsApp sent to {payload.get('mobile')}: {response.text[:200]}")
+                        return True
+                    logger.error(f"WhatsApp rejected for {payload.get('mobile')}: {response.text[:300]}")
+                    return False
                 logger.error(f"WhatsApp send failed (attempt {attempt + 1}/{cls.MAX_RETRIES}): {response.status_code} {response.text[:300]}")
             except Exception as e:
                 logger.error(f"WhatsApp send error (attempt {attempt + 1}/{cls.MAX_RETRIES}): {e}")

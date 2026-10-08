@@ -1,0 +1,37 @@
+# Rhino stack:  docker compose -f docker-compose.rhino.yml up -d --build
+#   backend  -> http://<host>:8001   (public: https://rino-api.justtouchsolutions.in)
+#   frontend -> http://<host>:3001   (public: https://rino.justtouchsolutions.in)
+# Put an HTTPS reverse proxy (nginx / caddy) in front: rino-api... -> 8001, rino... -> 3001.
+services:
+  rhino-backend:
+    build:
+      context: ./rhino-server
+      dockerfile: Dockerfile
+    container_name: rhino-backend
+    ports:
+      - "8001:8001"
+    env_file:
+      - ./rhino-server/.env
+    environment:
+      # overrides the Windows path that may be in .env
+      - DATABASE_URL=sqlite:////app/data/rhino.db
+      # WhatsApp fetches alert snapshots from here
+      - PUBLIC_BASE_URL=https://rino-api.justtouchsolutions.in
+    volumes:
+      - ./rhino-server/models:/app/models
+      - ./rhino-server/data:/app/data
+      - ./rhino-server/recordings:/app/recordings
+    restart: always
+
+  rhino-frontend:
+    build:
+      context: ./rhino-client
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: https://rino-api.justtouchsolutions.in
+    container_name: rhino-frontend
+    ports:
+      - "3001:3001"
+    depends_on:
+      - rhino-backend
+    restart: always

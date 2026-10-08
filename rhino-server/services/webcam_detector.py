@@ -75,6 +75,10 @@ def process_camera_stream(detectors, cam, stop_event):
         print(f"⚠️ Failed to open stream for Camera {cam_id}: {live_link}. Skipping this batch.")
         return
 
+    # A local video file used as a test "camera" would otherwise be consumed at full speed; play it in real time
+    is_file = os.path.isfile(str(live_link))
+    src_fps = cap.get(cv2.CAP_PROP_FPS) or 25
+
     # Get frame dimensions for VideoWriter
     frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -93,6 +97,8 @@ def process_camera_stream(detectors, cam, stop_event):
     while not stop_event.is_set():
         # Grab latest frame to clear buffer (crucial for real-time)
         ret = cap.grab()
+        if is_file:
+            time.sleep(1.0 / src_fps)
         if not ret:
             print(f"📡 Stream connection lost for Camera {cam_id}. Skipping this batch.")
             break

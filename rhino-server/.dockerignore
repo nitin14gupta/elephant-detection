@@ -1,0 +1,11 @@
+venv
+training
+test_output*
+test_videos
+recordings
+data
+__pycache__
+*.pyc
+*.mp4
+*.log
+.env
