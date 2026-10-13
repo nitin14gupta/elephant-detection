@@ -78,7 +78,7 @@ export default function LandingPage() {
 
           <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }}
             className="relative h-[460px] rounded-2xl overflow-hidden shadow-xl border border-gray-200">
-            <Image src="/elephant-hero.png" alt="Rhino monitoring" fill className="object-cover" />
+            <Image src="/hero.png" alt="Rhino monitoring" fill className="object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
             {/* Live badge */}
             <div className="absolute top-4 left-4 flex items-center gap-2 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full border border-gray-200 shadow-sm">
