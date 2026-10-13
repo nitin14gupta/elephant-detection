@@ -10,13 +10,21 @@ interface VideoPlayerProps {
   id: number;
 }
 
+// TTSPL cameras play reliably through their own embed page (the raw HLS stream shows black in the browser)
+const TTSPL_EMBED = (url: string) => {
+  const m = url.match(/ttspl\.live.*\/(cam\d+)\.m3u8/i);
+  return m ? `https://ttspl.live/player.html?camera=${m[1]}&embed=1` : null;
+};
+
 export default function VideoPlayer({ url, name, id }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const boxRef = useRef<HTMLDivElement>(null);
+  const embedUrl = TTSPL_EMBED(url);
 
   useEffect(() => {
     let hls: Hls | null = null;
 
-    if (videoRef.current) {
+    if (!embedUrl && videoRef.current) {
       const video = videoRef.current;
 
       if (Hls.isSupported()) {
@@ -43,24 +51,20 @@ export default function VideoPlayer({ url, name, id }: VideoPlayerProps) {
         hls.destroy();
       }
     };
-  }, [url]);
+  }, [url, embedUrl]);
 
   const toggleFullScreen = () => {
-    if (videoRef.current) {
-      if (videoRef.current.requestFullscreen) {
-        videoRef.current.requestFullscreen();
-      } else if ((videoRef.current as any).webkitRequestFullscreen) {
-        (videoRef.current as any).webkitRequestFullscreen();
-      } else if ((videoRef.current as any).msRequestFullscreen) {
-        (videoRef.current as any).msRequestFullscreen();
-      }
-    }
+    const el = (embedUrl ? boxRef.current : videoRef.current) as any;
+    if (!el) return;
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    else if (el.msRequestFullscreen) el.msRequestFullscreen();
   };
 
   return (
-    <div className="relative group bg-zinc-950 rounded-2xl overflow-hidden border border-white/5 hover:border-emerald-500/30 transition-all duration-500 h-full">
+    <div ref={boxRef} className="relative group bg-zinc-950 rounded-2xl overflow-hidden border border-white/5 hover:border-emerald-500/30 transition-all duration-500 h-full">
       {/* Header Info */}
-      <div className="absolute top-0 left-0 right-0 p-3 bg-gradient-to-b from-black/80 to-transparent z-10 flex items-center justify-between">
+      <div className="absolute top-0 left-0 right-0 p-3 bg-gradient-to-b from-black/80 to-transparent z-10 pointer-events-none flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           <span className="text-[10px] font-bold text-white uppercase tracking-widest">{name}</span>
@@ -71,16 +75,26 @@ export default function VideoPlayer({ url, name, id }: VideoPlayerProps) {
       </div>
 
       {/* Video Element */}
-      <video
-        ref={videoRef}
-        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500"
-        muted
-        playsInline
-      />
+      {embedUrl ? (
+        <iframe
+          src={embedUrl}
+          title={name}
+          className="w-full h-full border-0 block bg-black"
+          allow="autoplay; fullscreen; picture-in-picture"
+          allowFullScreen
+        />
+      ) : (
+        <video
+          ref={videoRef}
+          className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500"
+          muted
+          playsInline
+        />
+      )}
 
       {/* Footer / Status */}
-      <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 to-transparent z-10 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        <div className="flex items-center gap-3">
+      <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 to-transparent z-10 pointer-events-none flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <div className="flex items-center gap-3 pointer-events-auto">
           <button
             onClick={toggleFullScreen}
             className="p-1.5 bg-white/10 hover:bg-white/20 rounded-lg backdrop-blur-md transition-colors"
